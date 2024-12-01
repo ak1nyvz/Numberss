@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sayı Al</title>
+    <style>
+        /* Basit stil eklemeleri */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sayı Al</h1>
+    
+    <!-- Ad ve Soyad Giriş Kutuları -->
+    <label for="name">Ad:</label>
+    <input type="text" id="name" placeholder="Adınızı girin" required>
+    <br>
+    <label for="surname">Soyad:</label>
+    <input type="text" id="surname" placeholder="Soyadınızı girin" required>
+    <br><br>
+
+    <button id="getNumberButton">Sayı Al</button>
+    <button id="resetButton">Sayıları Sıfırla</button>
+    <p id="result"></p>
+
+    <!-- Kişilerin Ad Soyad ve Sayılarını Gösteren Tablo -->
+    <h2>Aldığınız Sayılar</h2>
+    <table id="numberTable">
+        <thead>
+            <tr>
+                <th>Ad</th>
+                <th>Soyad</th>
+                <th>Aldığı Sayılar</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dinamik olarak burada satırlar oluşturulacak -->
+        </tbody>
+    </table>
+
+    <script>
+        // 1. Sayıların listesini oluştur
+        let numbers = Array.from({ length: 70 }, (_, i) => i + 1);
+        let usedNumbers = {}; // Kullanılan sayıları saklamak için bir nesne oluştur
+        let adminKey = '4242'; // Admin anahtarı
+
+        // Tabloya veri eklemek için bir fonksiyon
+        function updateTable() {
+            const tableBody = document.getElementById('numberTable').querySelector('tbody');
+            tableBody.innerHTML = ''; // Tabloyu sıfırla
+
+            // Her kullanıcı için tabloya satır ekle
+            for (let key in usedNumbers) {
+                let row = document.createElement('tr');
+                let [name, surname] = key.split(' ');
+
+                row.innerHTML = `
+                    <td>${name}</td>
+                    <td>${surname}</td>
+                    <td>${usedNumbers[key].join(', ')}</td>
+                `;
+                tableBody.appendChild(row);
+            }
+        }
+
+        // 2. "Sayı Al" butonuna tıklama olayı ekle
+        document.getElementById('getNumberButton').addEventListener('click', () => {
+            const name = document.getElementById('name').value.trim();
+            const surname = document.getElementById('surname').value.trim();
+
+            // Ad ve soyad kontrolü
+            if (!name || !surname) {
+                alert("Lütfen ad ve soyadınızı girin!");
+                return; // Eğer ad veya soyad boşsa işlem yapma
+            }
+
+            // Ad ve soyad bir bütün olarak kontrol ediliyor
+            const fullName = `${name} ${surname}`;
+
+            if (usedNumbers[fullName]) {
+                alert("Daha önce sayı almışsınız!");
+                return; // Aynı ad ve soyadla tekrar sayı alınamaz
+            }
+
+            // Rastgele bir sayı seç
+            let randomIndex = Math.floor(Math.random() * numbers.length);
+            let randomNumber = numbers[randomIndex];
+
+            // Seçilen sayıyı kullanılan sayılar listesine ekle
+            usedNumbers[fullName] = [randomNumber];
+            numbers.splice(randomIndex, 1); // Kullanılan sayıyı listeden çıkar
+
+            // Sonucu göster
+            document.getElementById('result').innerText = `${name} ${surname}, aldığınız sayı: ${randomNumber}`;
+            
+            // Tabloyu güncelle
+            updateTable();
+        });
+
+        // 3. "Sayıları Sıfırla" butonuna tıklama olayı ekle
+        document.getElementById('resetButton').addEventListener('click', () => {
+            let inputKey = prompt('Admin anahtarını girin: '); // Kullanıcıdan admin anahtarını iste
+            if (inputKey === adminKey) { // Eğer girilen anahtar doğruysa
+                // Sayıları sıfırla
+                numbers = Array.from({ length: 70 }, (_, i) => i + 1);
+                usedNumbers = {}; // Kullanılan sayıları sıfırla
+                document.getElementById('result').innerText = "Tüm sayılar sıfırlandı.";
+
+                // Tabloyu sıfırla
+                updateTable();
+            } else {
+                alert("Yanlış anahtar!");
+            }
+        });
+    </script>
+</body>
+</html>
